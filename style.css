@@ -7,11 +7,14 @@
   --white: #ffffff;
 }
 
-/* Reset and base styles */
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
@@ -24,11 +27,11 @@ body {
   padding: 20px;
 }
 
-/* Unified container for all sections */
 .container,
 .contact,
 .social,
-.community {
+.community,
+.ai-playground {
   max-width: 800px;
   margin: 40px auto;
   background: rgba(255,255,255,0.08);
@@ -37,7 +40,6 @@ body {
   box-shadow: 0 8px 32px rgba(0,0,0,0.2);
 }
 
-/* Header section */
 .container {
   text-align: center;
 }
@@ -62,7 +64,6 @@ p {
   margin-bottom: 20px;
 }
 
-/* Buttons and links */
 .cta-button,
 button,
 .whatsapp-button,
@@ -86,7 +87,6 @@ button:hover,
   background-color: var(--blue);
 }
 
-/* Forms */
 input, textarea {
   width: 100%;
   padding: 12px;
@@ -103,7 +103,6 @@ textarea::placeholder {
   opacity: 0.7;
 }
 
-/* Social icons layout */
 .social-icons {
   display: flex;
   flex-wrap: wrap;
@@ -111,7 +110,6 @@ textarea::placeholder {
   gap: 10px;
 }
 
-/* Poll buttons */
 .poll button {
   font-size: 1.5em;
   background: none;
@@ -125,12 +123,66 @@ textarea::placeholder {
   transform: scale(1.2);
 }
 
-/* Responsive tweaks */
+.ai-card {
+  background: rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.ai-card input {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border: none;
+  border-radius: 6px;
+  background-color: rgba(255,255,255,0.2);
+  color: var(--white);
+}
+
+.ai-buttons button {
+  margin: 5px;
+  padding: 10px 20px;
+  background-color: var(--coral);
+  color: var(--white);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.ai-buttons button:hover {
+  background-color: var(--blue);
+}
+
+.response-box {
+  margin-top: 20px;
+  background-color: rgba(255,255,255,0.1);
+  padding: 15px;
+  border-radius: 8px;
+  min-height: 80px;
+  color: var(--yellow);
+  font-style: italic;
+}
+
+.emoji-reactions span {
+  font-size: 1.5em;
+  margin: 10px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.emoji-reactions span:hover {
+  transform: scale(1.3);
+}
+
 @media (max-width: 768px) {
   .container,
   .contact,
   .social,
-  .community {
+  .community,
+  .ai-playground {
     padding: 20px;
   }
 
