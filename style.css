@@ -1,4 +1,3 @@
-/* Base colors */
 :root {
   --charcoal: #50514F;
   --coral: #F25F5C;
@@ -7,68 +6,106 @@
   --teal: #70C1B3;
 }
 
-/* Glossy background */
 body {
   margin: 0;
   font-family: 'Segoe UI', sans-serif;
-  background: linear-gradient(
-      rgba(255, 255, 255, 0.1),
-      rgba(0, 0, 0, 0.3)
-    ),
-    url('background.jpg');
+  background: linear-gradient(rgba(255,255,255,0.1), rgba(0,0,0,0.3)), url('background.jpg');
   background-size: cover;
   background-position: center;
-  background-repeat: no-repeat;
   backdrop-filter: blur(2px);
   color: var(--yellow);
 }
 
-/* Centered container */
 .container {
   max-width: 800px;
   margin: 60px auto;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255,255,255,0.1);
   padding: 40px;
   border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(6px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
   text-align: center;
 }
 
-/* Profile pic */
 .profile-pic {
   width: 150px;
   height: 150px;
   border-radius: 50%;
   object-fit: cover;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
   margin-bottom: 20px;
 }
 
-/* Headings and text */
-h1 {
+h1, h2 {
   color: var(--blue);
   margin-bottom: 10px;
 }
 
 p {
   color: var(--teal);
-  font-size: 1.2em;
-  margin-bottom: 30px;
+  font-size: 1.1em;
+  margin-bottom: 20px;
 }
 
-/* Call-to-action button */
-.cta-button {
+.cta-button, button, .whatsapp-button {
   background-color: var(--coral);
   color: white;
-  padding: 12px 24px;
+  padding: 10px 20px;
   border-radius: 6px;
   text-decoration: none;
   font-weight: bold;
   transition: background-color 0.3s ease;
+  display: inline-block;
+  margin: 10px 0;
 }
 
-.cta-button:hover {
+.cta-button:hover, button:hover, .whatsapp-button:hover {
   background-color: var(--blue);
+}
+
+.contact, .social, .community {
+  max-width: 800px;
+  margin: 40px auto;
+  background: rgba(255,255,255,0.1);
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+}
+
+.contact-form input, .contact-form textarea,
+.newsletter input, .submit-tool input {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border: none;
+  border-radius: 6px;
+}
+
+.social-icons a {
+  margin: 0 10px;
+  color: var(--yellow);
+  text-decoration: none;
+  font-weight: bold;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background-color: rgba(255, 255, 255, 0.1);
+  transition: background-color 0.3s ease;
+}
+
+.social-icons a:hover {
+  background-color: var(--coral);
+  color: white;
+}
+
+.poll button {
+  font-size: 1.5em;
+  margin: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.poll button:hover {
+  transform: scale(1.2);
 }
 
