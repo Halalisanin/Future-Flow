@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
 """
-Future Flow – stealth stats & form collector
+Future Flow – stealth one-click admin button + stats
 Run:  python app.py
+visit /unlock?key=SUPER_SECRET_KEY   (once)
+then click the padlock icon that appears in the hero
 """
 import os, sqlite3, time, pathlib
 from datetime import datetime
-from flask import Flask, request, g, send_from_directory
+from flask import Flask, request, g, make_response, redirect, send_from_directory
 
 DB_FILE    = "stats.db"
 SECRET_KEY = os.getenv("DASH_KEY", "SUPER_SECRET_KEY")   # <- change me
+COOKIE_NAME = "ff_admin"
 
 # ------------------------------------------------------------------ helpers
 def get_db():
@@ -33,312 +36,57 @@ def ensure_static():
     static = pathlib.Path("static")
     static.mkdir(exist_ok=True)
 
-    # 1. CSS you just supplied
     css = static / "style.css"
     if not css.exists():
-        css.write_text("""/*  Future Flow – your supplied style.css  */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-body {
-    font-family: 'Arial', sans-serif;
-    line-height: 1.6;
-    color: #333;
-    overflow-x: hidden;
-}
-.navbar {
-    position: fixed;
-    top: 0;
-    width: 100%;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    z-index: 1000;
-    padding: 1rem 0;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-.nav-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 2rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-.nav-logo {
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: #2c5aa0;
-}
-.nav-menu {
-    display: flex;
-    list-style: none;
-    gap: 2rem;
-}
-.nav-link {
-    text-decoration: none;
-    color: #333;
-    font-weight: 500;
-    transition: color 0.3s ease;
-}
-.nav-link:hover {
-    color: #2c5aa0;
-}
-.hero {
-    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('background.jpg');
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    color: white;
-    padding: 2rem;
-}
-.hero-content {
-    max-width: 600px;
-}
-.profile-img {
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
-    border: 4px solid white;
-    margin-bottom: 1.5rem;
-    object-fit: cover;
-}
-.hero h1 {
-    font-size: 3rem;
-    margin-bottom: 1rem;
-    font-weight: 300;
-}
-.hero p {
-    font-size: 1.2rem;
-    margin-bottom: 2rem;
-    opacity: 0.9;
-}
-.social-links {
-    margin-top: 2rem;
-}
-.social-link {
-    display: inline-block;
-    padding: 12px 30px;
-    background: #2c5aa0;
-    color: white;
-    text-decoration: none;
-    border-radius: 25px;
-    transition: all 0.3s ease;
-    font-weight: 500;
-}
-.social-link:hover {
-    background: #1e3d72;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-}
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 2rem;
-}
-.blog-section {
-    padding: 5rem 0;
-    background: #f8f9fa;
-}
-.blog-section h2 {
-    text-align: center;
-    font-size: 2.5rem;
-    margin-bottom: 3rem;
-    color: #333;
-}
-.blog-posts {
-    display: grid;
-    gap: 2rem;
-    max-width: 800px;
-    margin: 0 auto;
-}
-.blog-post {
-    background: white;
-    padding: 2rem;
-    border-radius: 10px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease;
-    position: relative;
-}
-.blog-post:hover {
-    transform: translateY(-5px);
-}
-.blog-post h3 {
-    color: #2c5aa0;
-    margin-bottom: 1rem;
-    font-size: 1.3rem;
-    line-height: 1.4;
-}
-.blog-post p {
-    color: #666;
-    margin-bottom: 0;
-    line-height: 1.6;
-}
-.blog-header {
-    display: flex;
-    align-items: center;
-    margin-bottom: 1rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid #eee;
-}
-.author-img {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    margin-right: 12px;
-    object-fit: cover;
-}
-.author-info {
-    display: flex;
-    flex-direction: column;
-}
-.author-name {
-    font-weight: 600;
-    color: #333;
-    font-size: 0.9rem;
-}
-.post-date {
-    color: #999;
-    font-size: 0.8rem;
-}
-.read-more {
-    display: inline-block;
-    color: #2c5aa0;
-    text-decoration: none;
-    font-weight: 500;
-    margin-top: 1rem;
-    transition: color 0.3s ease;
-    padding: 8px 16px;
-    border: 1px solid #2c5aa0;
-    border-radius: 5px;
-    font-size: 0.9rem;
-}
-.read-more:hover {
-    color: white;
-    background: #2c5aa0;
-    text-decoration: none;
-}
-.contact-section {
-    padding: 5rem 0;
-    background: white;
-}
-.contact-section h2 {
-    text-align: center;
-    font-size: 2.5rem;
-    margin-bottom: 3rem;
-    color: #333;
-}
-.contact-form {
-    max-width: 600px;
-    margin: 0 auto;
-}
-.form-group {
-    margin-bottom: 1.5rem;
-}
-.form-group input,
-.form-group textarea {
-    width: 100%;
-    padding: 12px;
-    border: 2px solid #e1e5e9;
-    border-radius: 8px;
-    font-size: 1rem;
-    transition: border-color 0.3s ease;
-    font-family: inherit;
-}
-.form-group input:focus,
-.form-group textarea:focus {
-    outline: none;
-    border-color: #2c5aa0;
-}
-.submit-btn {
-    width: 100%;
-    padding: 12px;
-    background: #2c5aa0;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-weight: 500;
-}
-.submit-btn:hover {
-    background: #1e3d72;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-}
-.footer {
-    background: #333;
-    color: white;
-    text-align: center;
-    padding: 2rem 0;
-}
-@media (max-width: 768px) {
-    .nav-menu {
-        gap: 1rem;
-    }
-    .hero h1 {
-        font-size: 2rem;
-    }
-    .hero p {
-        font-size: 1rem;
-    }
-    .blog-section h2,
-    .contact-section h2 {
-        font-size: 2rem;
-    }
-    .container {
-        padding: 0 1rem;
-    }
-    .blog-post {
-        padding: 1.5rem;
-    }
-    .blog-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
-    }
-    .author-img {
-        margin-right: 0;
-    }
-    .author-info {
-        flex-direction: row;
-        gap: 1rem;
-        align-items: center;
-    }
-}
-@media (max-width: 480px) {
-    .nav-container {
-        flex-direction: column;
-        gap: 1rem;
-    }
-    .nav-menu {
-        gap: 1.5rem;
-    }
-    .hero {
-        padding: 1rem;
-        min-height: 80vh;
-    }
-    .profile-img {
-        width: 120px;
-        height: 120px;
-    }
-    .blog-section,
-    .contact-section {
-        padding: 3rem 0;
-    }
-}""")
+        css.write_text("""/*  your full CSS (shortened here for brevity)  */
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Arial,sans-serif;line-height:1.6;color:#333;overflow-x:hidden}
+.navbar{position:fixed;top:0;width:100%;background:rgba(255,255,255,.95);backdrop-filter:blur(10px);z-index:1000;padding:1rem 0;box-shadow:0 2px 10px rgba(0,0,0,.1)}
+.nav-container{max-width:1200px;margin:0 auto;padding:0 2rem;display:flex;justify-content:space-between;align-items:center}
+.nav-logo{font-size:1.5rem;font-weight:bold;color:#2c5aa0}
+.nav-menu{display:flex;list-style:none;gap:2rem}
+.nav-link{text-decoration:none;color:#333;font-weight:500;transition:color .3s ease}
+.nav-link:hover{color:#2c5aa0}
+.hero{background:linear-gradient(rgba(0,0,0,.5),rgba(0,0,0,.5)),url(background.jpg);background-size:cover;background-position:center;background-attachment:fixed;min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;color:white;padding:2rem}
+.hero-content{max-width:600px;position:relative}
+.profile-img{width:150px;height:150px;border-radius:50%;border:4px solid white;margin-bottom:1.5rem;object-fit:cover}
+.hero h1{font-size:3rem;margin-bottom:1rem;font-weight:300}
+.hero p{font-size:1.2rem;margin-bottom:2rem;opacity:.9}
+.social-links{margin-top:2rem}
+.social-link{display:inline-block;padding:12px 30px;background:#2c5aa0;color:white;text-decoration:none;border-radius:25px;transition:all .3s ease;font-weight:500}
+.social-link:hover{background:#1e3d72;transform:translateY(-2px);box-shadow:0 5px 15px rgba(0,0,0,.2)}
+.container{max-width:1200px;margin:0 auto;padding:0 2rem}
+.blog-section{padding:5rem 0;background:#f8f9fa}
+.blog-section h2{text-align:center;font-size:2.5rem;margin-bottom:3rem;color:#333}
+.blog-posts{display:grid;gap:2rem;max-width:800px;margin:0 auto}
+.blog-post{background:white;padding:2rem;border-radius:10px;box-shadow:0 5px 15px rgba(0,0,0,.1);transition:transform .3s ease}
+.blog-post:hover{transform:translateY(-5px)}
+.blog-post h3{color:#2c5aa0;margin-bottom:1rem;font-size:1.3rem;line-height:1.4}
+.blog-post p{color:#666;margin-bottom:0;line-height:1.6}
+.blog-header{display:flex;align-items:center;margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid #eee}
+.author-img{width:30px;height:30px;border-radius:50%;margin-right:12px;object-fit:cover}
+.author-info{display:flex;flex-direction:column}
+.author-name{font-weight:600;color:#333;font-size:.9rem}
+.post-date{color:#999;font-size:.8rem}
+.read-more{display:inline-block;color:#2c5aa0;text-decoration:none;font-weight:500;margin-top:1rem;transition:color .3s ease;padding:8px 16px;border:1px solid #2c5aa0;border-radius:5px;font-size:.9rem}
+.read-more:hover{color:white;background:#2c5aa0;text-decoration:none}
+.contact-section{padding:5rem 0;background:white}
+.contact-section h2{text-align:center;font-size:2.5rem;margin-bottom:3rem;color:#333}
+.contact-form{max-width:600px;margin:0 auto}
+.form-group{margin-bottom:1.5rem}
+.form-group input,.form-group textarea{width:100%;padding:12px;border:2px solid #e1e5e9;border-radius:8px;font-size:1rem;transition:border-color .3s ease;font-family:inherit}
+.form-group input:focus,.form-group textarea:focus{outline:none;border-color:#2c5aa0}
+.submit-btn{width:100%;padding:12px;background:#2c5aa0;color:white;border:none;border-radius:8px;font-size:1rem;cursor:pointer;transition:all .3s ease;font-weight:500}
+.submit-btn:hover{background:#1e3d72;transform:translateY(-2px);box-shadow:0 5px 15px rgba(0,0,0,.1)}
+.footer{background:#333;color:white;text-align:center;padding:2rem 0}
+@media(max-width:768px){.nav-menu{gap:1rem}.hero h1{font-size:2rem}.hero p{font-size:1rem}.blog-section h2,.contact-section h2{font-size:2rem}.container{padding:0 1rem}.blog-post{padding:1.5rem}.blog-header{flex-direction:column;align-items:flex-start;gap:.5rem}.author-img{margin-right:0}.author-info{flex-direction:row;gap:1rem;align-items:center}}
+@media(max-width:480px){.nav-container{flex-direction:column;gap:1rem}.nav-menu{gap:1.5rem}.hero{padding:1rem;min-height:80vh}.profile-img{width:120px;height:120px}.blog-section,.contact-section{padding:3rem 0}}
+/* ---- admin button ---- */
+.admin-btn{position:absolute;top:10px;right:10px;background:#222;color:white;padding:6px 10px;border-radius:4px;font-size:14px;text-decoration:none;display:inline-flex;align-items:center;gap:4px;opacity:.8;transition:opacity .2s}.admin-btn:hover{opacity:1}""")
 
-    # 2. JS you supplied earlier
     js = static / "script.js"
     if not js.exists():
-        js.write_text("""/*  Future Flow – your supplied script.js  */
+        js.write_text("""/*  your full JS (shortened)  */
 document.querySelectorAll('a[href^="#"]').forEach(anchor=>{anchor.addEventListener('click',function(e){e.preventDefault();const t=document.querySelector(this.getAttribute('href'));if(t){t.scrollIntoView({behavior:'smooth',block:'start'});updateActiveNavLink(this.getAttribute('href'))}})});
 window.addEventListener('scroll',()=>{const n=document.querySelector('.navbar');window.scrollY>100?(n.style.background='rgba(255,255,255,.98)',n.style.boxShadow='0 2px 20px rgba(0,0,0,.1)'):(n.style.background='rgba(255,255,255,.95)',n.style.boxShadow='0 2px 10px rgba(0,0,0,.1)');updateActiveNavOnScroll()});
 function updateActiveNavLink(id){document.querySelectorAll('.nav-link').forEach(l=>l.classList.remove('active'));document.querySelector(`a[href="${id}"]`).classList.add('active')}
@@ -351,9 +99,8 @@ document.addEventListener('DOMContentLoaded',()=>{updateActiveNavLink('#home');c
 window.addEventListener('error',e=>console.error('Site error:',e.error));
 window.addEventListener('load',()=>{const t=performance.timing.loadEventEnd-performance.timing.navigationStart;console.log(`Page loaded in ${t}ms`)});""")
 
-    # 3. placeholder background image (1×1 black pixel)
     bg = static / "background.jpg"
-    if not bg.exists():
+    if not bg.exists():  # 1×1 black pixel placeholder
         bg.write_bytes(
             b'\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x01\x00H\x00H\x00\x00\xff\xdb'
             b'\x00C\x00\x08\x06\x06\x07\x06\x05\x08\x07\x07\x07\t\t\x08\n\x0c\x14\r\x0c\x0b\x0b\x0c\x19\x12\x13\x0f'
@@ -376,14 +123,26 @@ def _close(exc):
     if hasattr(g, '_database'):
         g._database.close()
 
-# ---------------------------------------------------------- public routes
+# ---------------------------------------------------------- unlock cookie route
+@app.route('/unlock')
+def unlock():
+    if request.args.get('key') != SECRET_KEY:
+        return "Unauthorized", 401
+    resp = make_response(redirect('/'))
+    resp.set_cookie(COOKIE_NAME, '1', max_age=60*60*24*30)  # 30 days
+    return resp
+
+# ---------------------------------------------------------- public home (with conditional button)
 @app.route('/')
 def home():
     get_db().execute("INSERT INTO visits(path,ip,ua,ts) VALUES(?,?,?,?)",
                      (request.path, request.remote_addr,
-                      request.headers.get('User-Agent',''), int(time.time())))
+                      request.headers.get('User-Agent', ''), int(time.time())))
     get_db().commit()
-    return """<!DOCTYPE html>
+    admin_btn = ''
+    if request.cookies.get(COOKIE_NAME):
+        admin_btn = '<a href="/dashboard" class="admin-btn" title="Dashboard">🔓 Dashboard</a>'
+    return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -405,6 +164,7 @@ def home():
 
     <section id="home" class="hero">
         <div class="hero-content">
+            {admin_btn}
             <img src="https://i.pravatar.cc/150" alt="Future Flow" class="profile-img">
             <h1>Future Flow</h1>
             <p>Exploring the intersection of technology and human potential</p>
@@ -466,7 +226,7 @@ def home():
 </body>
 </html>"""
 
-# ---------------------------------------------------------- contact form receiver
+# ---------------------------------------------------------- contact receiver
 @app.route('/submit_contact', methods=['POST'])
 def submit_contact():
     data = request.get_json(force=True)
@@ -475,10 +235,10 @@ def submit_contact():
     get_db().commit()
     return {"status": "success", "message": "Thank you! Your message was sent."}
 
-# ---------------------------------------------------------- secret dashboard
+# ---------------------------------------------------------- dashboard GUI
 @app.route('/dashboard')
 def dashboard():
-    if request.args.get('key') != SECRET_KEY:
+    if request.cookies.get(COOKIE_NAME) != '1' and request.args.get('key') != SECRET_KEY:
         return "Unauthorized", 401
     visits = get_db().execute("SELECT * FROM visits ORDER BY ts DESC LIMIT 200").fetchall()
     msgs   = get_db().execute("SELECT * FROM contacts ORDER BY ts DESC LIMIT 200").fetchall()
